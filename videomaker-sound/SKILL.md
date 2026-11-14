@@ -53,7 +53,8 @@ K:C major
 ### 2. 合成 BGM
 
 ```bash
-python3 ~/.hermes/profiles/cio/skills/video/videomaker-sound/scripts/abc_synth.py \
+# $SKILL_DIR = 本 skill 安装目录（含 scripts/）
+python3 "$SKILL_DIR/scripts/abc_synth.py" \
   episodes/<集>/score.abc \
   episodes/<集>/final/bgm.wav
 ```
@@ -63,10 +64,10 @@ python3 ~/.hermes/profiles/cio/skills/video/videomaker-sound/scripts/abc_synth.p
 ### 3. 合成成片
 
 ```bash
-python3 ~/.hermes/profiles/cio/skills/video/videomaker-sound/scripts/render_with_music.py \
-  episodes/<集>/final/cat-XX.mp4 \
+python3 "$SKILL_DIR/scripts/render_with_music.py" \
+  episodes/<集>/final/<episode>.mp4 \
   episodes/<集>/final/bgm.wav \
-  episodes/<集>/final/cat-XX-with-music.mp4
+  episodes/<集>/final/<episode>-with-music.mp4
 ```
 
 ffmpeg 内部：`-i video.mp4 -i bgm.wav -c:v copy -c:a aac -shortest out.mp4`

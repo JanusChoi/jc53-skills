@@ -1,4 +1,29 @@
-# gefei-seo-distiller：哥飞出海建站方法论蒸馏器
+# gefei-seo-distiller
+
+将哥飞及相关出海建站/SEO 原文蒸馏为可追溯知识库、决策规则与 Agent 资产规格。
+
+**安装并使用：** 把 GitHub 仓库 [`JanusChoi/jc53-skills`](https://github.com/JanusChoi/jc53-skills) 里的 [`gefei-seo-distiller/`](https://github.com/JanusChoi/jc53-skills/tree/main/gefei-seo-distiller) 装进你所用 Agent 的 skills 目录（不必克隆整仓），例如：
+
+```bash
+npx --yes degit JanusChoi/jc53-skills/gefei-seo-distiller <你的-skills目录>/gefei-seo-distiller
+```
+
+然后**新开对话**，用下方触发话术调用。适用于任何会加载 Agent Skills（目录内含 `SKILL.md`）的工具（Cursor、Claude Code、Codex、Hermes 等）。
+
+<details>
+<summary>无 npx 时 / 路径示例</summary>
+
+```bash
+git clone --depth 1 --filter=blob:none --sparse https://github.com/JanusChoi/jc53-skills.git /tmp/jc53-skills
+cd /tmp/jc53-skills && git sparse-checkout set gefei-seo-distiller
+mkdir -p <你的-skills目录>
+ln -sfn /tmp/jc53-skills/gefei-seo-distiller <你的-skills目录>/gefei-seo-distiller
+```
+
+常见 skills 目录：`~/.cursor/skills/`、`~/.claude/skills/`，其它工具以各自文档为准。
+</details>
+
+---
 
 **用途：**从公众号原始文章持续沉淀“可引用的知识”和“可执行的方法”，为复刻一个具备真实数据工具的 SEO 教练 Agent 做准备。此项目是基于 `investor-distiller` 的设计思想独立改写，并非原项目的官方衍生实现。
 

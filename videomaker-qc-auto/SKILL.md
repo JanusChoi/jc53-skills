@@ -34,7 +34,8 @@ description: Auto QC frame signals + checks for take decisions.
 ### 1. 跑 Layer 1（每段 take 完成后必跑）
 
 ```bash
-python3 ~/.hermes/profiles/cio/skills/video/videomaker-qc-auto/scripts/qc.py \
+# $SKILL_DIR = 本 skill 安装目录（含 scripts/）
+python3 "$SKILL_DIR/scripts/qc.py" \
   episodes/<集>/takes/seg1/take1/
 ```
 
@@ -78,7 +79,7 @@ for seg in qc_signals['segs']:
 
 ## 已知陷阱
 
-- **vision_analyze 不是免费的**（虽然是 Hermes 内置，但每次都消耗 tokens）—— Layer 1 signals 优先，Layer 2 vision 只在 signals 异常时用
+- **vision_analyze 不是免费的**（Agent 视觉调用通常计费/耗 token）—— Layer 1 signals 优先，Layer 2 vision 只在 signals 异常时用
 - **PSNR 计算**：ffmpeg `psnr` filter 比 numpy 更准，qc.py 默认用 ffmpeg
 - **sharpness 拉普拉斯方差**：阈值因风格而异，猫系列阈值 80 适合；3D 渲染阈值要降到 30
 - **角色识别**：vision_analyze 看到的"黑白猫"和 prompt 说的"墨团"是不同概念 —— 问问题时要用 prompt 里写的具体特征描述（"戴金圆框眼镜、穿深蓝围裙的奶牛猫"）

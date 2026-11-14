@@ -54,7 +54,8 @@ description: Use when 给 videomaker/H3 短片拍片前/后做节奏量化、3�
 ### 拍片后（必跑）
 
 ```bash
-python3 ~/.hermes/profiles/cio/skills/video/videomaker-rhythm/scripts/rhythm_check.py \
+# $SKILL_DIR = 本 skill 安装目录（含 scripts/）
+python3 "$SKILL_DIR/scripts/rhythm_check.py" \
   episodes/<集>/rhythm.md \
   episodes/<集>/takes/seg1/take1/clip.mp4 ...
 ```

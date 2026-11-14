@@ -2,16 +2,21 @@
 name: seo-decision-framework
 description: Use when 拿蒸馏产物做"该不该上这个词"决策。5 条筛子 + G1/G2 workaround + 任务分类。
 version: 1.0.0
-author: 哥飞蒸馏实战校准 (2026-10-11)
+author: gefei-method distillation notes
 license: MIT
 metadata:
-  hermes:
-    tags: [seo, decision-framework, keyword-research, gefei]
-    related_skills: [gefei-seo-distiller, investor-distiller, expert-lens-reasoning]
+  tags: [seo, decision-framework, keyword-research, gefei]
+  related_skills:
+    - gefei-seo-distiller
+    - keyword-research
+    - new-site-opportunity-review
+    - serp-competitor-audit
+    - sitemap-page-matrix
+    - technical-seo-triage
 ---
 
 > **定位**：蒸馏完成后怎么用蒸馏产物做"该不该上"的决策。**不是**蒸馏本身（那是 `gefei-seo-distiller` 等 skill 的活）。
-> **来源**：哥飞 2130 knowledge_units + 用户强信号校准（2026-10-11）+ Adsense 单价真实数据 + G1/G2 死结 workaround。
+> **来源**：哥飞方法论蒸馏产物 + Adsense 单价公开量级参考 + G1/G2 死结 workaround。
 
 ## When to Use
 
@@ -22,8 +27,8 @@ metadata:
 - user 蒸馏完哥飞/其他博主后不知道"接下来怎么用"
 
 **不要用于**：
-- 蒸馏本身（→ `gefei-seo-distiller` / `investor-distiller`）
-- 已装好的 SEO skill 触发（→ `~/.hermes/profiles/cio/skills/seo/` 下 5 个 skill）
+- 蒸馏本身（→ `gefei-seo-distiller`；其它博主蒸馏用对应 distiller）
+- 已有明确执行类 SEO skill 时直接触发那些 skill（本仓库：`keyword-research` / `new-site-opportunity-review` / `serp-competitor-audit` / `sitemap-page-matrix` / `technical-seo-triage`）
 
 ## 任务类型（启动前先确认）
 
@@ -132,7 +137,6 @@ metadata:
 
 ## 配套 skill
 
-- **`gefei-seo-distiller`**（research/）：蒸馏哥飞 + 任何出海建站/SEO 公众号
-- **`investor-distiller`**（research/）：蒸馏投资博主（7 维 DNA）
-- **`~/.hermes/profiles/cio/skills/seo/`** 下 5 个 skill（new-site-opportunity-review 等）：执行层
-- **`expert-lens-reasoning`**（research/）：从公开事实到付费级判断
+- **`gefei-seo-distiller`**：蒸馏哥飞及相关出海建站/SEO 文章
+- 本仓库执行层：`keyword-research` / `new-site-opportunity-review` / `serp-competitor-audit` / `sitemap-page-matrix` / `technical-seo-triage`
+

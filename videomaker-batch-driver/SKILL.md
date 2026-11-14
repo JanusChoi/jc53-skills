@@ -26,25 +26,25 @@ chained driver 模式：把 take 列表 + 每段的 ref PNG 路径写到一个 s
 ### 1. 准备
 
 ```bash
-# 在 episode 根（继承 cat-04 模板）
-EP=/Users/januswing/Downloads/video-workflow-extracted/episodes/<cat-id>
+# 在 episode 根目录
+EP=/path/to/episodes/<episode-id>
 ls $EP/{prompts,docs,takes,final}    # 都要有
-cp ../cat-04-snowman/run_seg.py $EP/   # 继承 H3 client 包装（路径已修）
-cp ../cat-04-snowman/edit.sh    $EP/   # concat demuxer
-ls /Users/januswing/.hermes/profiles/cio/skills/video/videomaker-sound/scripts/render_with_music.py  # 必须有
+# run_seg.py / edit.sh：来自你的拍片模板或上一集副本
+# 配乐脚本：本仓库 videomaker-sound/scripts/render_with_music.py（需已安装该 skill）
+ls "$SKILL_DIR/../videomaker-sound/scripts/render_with_music.py"
 ```
 
 ### 2. 写 chained_drive.py（customize 每集）
 
-放在 `$EP/chained_drive.py`。最小骨架（参考 cat-05-catrush 实测版本）：
+放在 `$EP/chained_drive.py`，或直接调用本 skill 的 `scripts/chained_drive.py`。最小骨架：
 
 ```python
-EP = "/path/to/episodes/<cat-id>"
+EP = "/path/to/episodes/<episode-id>"
 SEGS = ["seg1", "seg2", "seg3", "seg4"]
 REFS_BY_SEG = {
-    "seg1": ["/Users/januswing/Downloads/cow-cat1.png",
-             "/Users/januswing/Downloads/3flower-cat.png"],
-    # segN 不传 ref（首轮纯文本）
+    "seg1": ["/path/to/refs/character.png",
+             "/path/to/refs/prop.png"],
+    # segN 可不传 ref（纯文本提示）
 }
 
 def wait_clip(seg, timeout_s=900):
@@ -83,7 +83,7 @@ def main():
 ### 3. 启动 + 监控
 
 ```bash
-set -a; source ~/.hermes/profiles/cio/.env; set +a   # 必！launchd 不读 .zshrc
+# 按你的 Agent / 渲染后端加载所需环境变量（API key 走密钥机制，勿写入 skill）
 cd $EP
 nohup python3 chained_drive.py 2>&1 | tee /tmp/<proj>_chain.log &   # 如果 nohup 被 sandbox 拦，用 terminal(background=true, notify_on_complete=true) 启动
 ```

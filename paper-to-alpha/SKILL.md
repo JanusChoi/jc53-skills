@@ -6,8 +6,7 @@ description: |
   "从论文找因子"、"看看最新 q-fin 有啥"、"跑一遍 paper_to_alpha"时使用。
   核心：5 步法 SOP（核心提取 → 定位校准 → 价值质疑 → 量化映射 → 实证验证），
   把学术概念映射成可计算的代理因子，写入 AlphaHypothesis 库待审阅。
-  不用于：单只股票分析（用 equity-snapshot）、持仓逻辑跟踪（用 thesis-tracker）、
-  市场盘面复盘（用 market-daily-review）、公众号论文分析文章（用 wechat-draft-publisher）。
+  不用于：单只股票买卖时机、持仓跟踪、盘面复盘、写公众号稿（用对应专用 skill）。
 ---
 
 # Paper-to-Alpha Skill
@@ -29,9 +28,9 @@ description: |
 
 **首次/批量抓取**：
 ```bash
-python3 /Users/januswing/code/agent-cio/strategy_miner/scripts/arxiv_scraper.py
+python3 ${ALPHA_ROOT:-.}/strategy_miner/scripts/arxiv_scraper.py
 ```
-输出：`/Users/januswing/code/agent-cio/strategy_miner/data/arxiv_papers.json`（最近 30 天 q-fin 全集）
+输出：`${ALPHA_ROOT:-.}/strategy_miner/data/arxiv_papers.json`（最近 30 天 q-fin 全集）
 
 **单篇精读**：webfetch `https://arxiv.org/abs/{ID}` + `https://arxiv.org/pdf/{ID}.pdf`，读摘要 + 关键章节。
 
@@ -122,7 +121,7 @@ python3 /Users/januswing/code/agent-cio/strategy_miner/scripts/arxiv_scraper.py
 ### 阶段 6：写入 AlphaHypothesis 库（脚本化）
 
 ```bash
-python3 /Users/januswing/code/agent-cio/strategy_miner/scripts/paper_to_alpha.py
+python3 ${ALPHA_ROOT:-.}/strategy_miner/scripts/paper_to_alpha.py
 ```
 
 **自动生成**：
@@ -145,7 +144,7 @@ python3 /Users/januswing/code/agent-cio/strategy_miner/scripts/paper_to_alpha.py
 | `reviewing` | 审阅中 | 用 informer-query 找历史先例 |
 | `rejected` | 拒绝 | 归档 + 写失败约束到记忆库 |
 | `backtesting` | 回测中 | 用 thesis-tracker 跟踪验证进度 |
-| `deployed` | 已部署 | 接进 B 策略 / A 股策略体系 |
+| `deployed` | 已部署 | 接入你自己的策略部署流程 |
 | `archived` | 已归档 | 失效或退役 |
 
 **审阅 checklist**：
@@ -278,30 +277,26 @@ python3 /Users/januswing/code/agent-cio/strategy_miner/scripts/paper_to_alpha.py
 ## 配套资源
 
 ### 已挖过的案例（参考样板）
-- `~/.openclaw/workspace/nboost/memory/paper-to-alpha-alpha-r1.md` — 194 行完整样板
-- `~/.openclaw/workspace/nboost/memory/paper-to-alpha-test-epiplexity.md` — SOP 测试案例
-- `~/.openclaw/workspace/nboost/memory/paper-to-alpha-validation-2026-03-05.md` — 验证报告 + v0.3.0 路线图
+- 将完整拆解样板放在你自己的工作区（例如 `docs/paper-to-alpha-examples/`），勿提交密钥或私人记忆库路径
 
-### 核心脚本（路径固定，不要改）
-- `~/code/agent-cio/strategy_miner/scripts/arxiv_scraper.py` — 抓论文
-- `~/code/agent-cio/strategy_miner/scripts/paper_to_alpha.py` — 转 Alpha
-- `~/code/agent-cio/alpha/schema.py` — AlphaHypothesis 数据结构
+
+### 核心脚本（通过环境变量 `ALPHA_ROOT` 指向你的量化项目根；缺省为当前目录）
+- `${ALPHA_ROOT:-.}/strategy_miner/scripts/arxiv_scraper.py` — 抓论文
+- `${ALPHA_ROOT:-.}/strategy_miner/scripts/paper_to_alpha.py` — 转 Alpha
+- `${ALPHA_ROOT:-.}/alpha/schema.py` — AlphaHypothesis 数据结构
 
 ### Alpha 库位置
-- 主库：`~/code/agent-cio/alpha/library/YYYY-MM-DD/`
-- 索引：`~/code/agent-cio/alpha/index.json`
+- 主库：`${ALPHA_ROOT:-.}/alpha/library/YYYY-MM-DD/`
+- 索引：`${ALPHA_ROOT:-.}/alpha/index.json`
 - 状态机：`waiting_review → reviewing → rejected/backtesting/deployed → archived`
 
 ### 已挖论文存档
-- `~/code/agent-cio/strategy_miner/data/arxiv_papers.json` — 最近 30 天 q-fin 全集
-- `~/code/agent-cio/papers/` — 重点论文 PDF
+- `${ALPHA_ROOT:-.}/strategy_miner/data/arxiv_papers.json` — 最近 30 天 q-fin 全集
+- `${ALPHA_ROOT:-.}/papers/` — 重点论文 PDF
 
 ### 关联 skill
-- `thesis-tracker` — 把 alpha 升级为正式 thesis 时调用
-- `equity-snapshot` — 单标验证时调用
-- `informer-query` — 找历史先例，做来源审计
-- `druckenmiller-framework` — 宏观主题级论文时联动
-- `wechat-draft-publisher` — 同步出公众号论文分析文章时联动
+- 本仓库：`druckenmiller-framework`（宏观主题级论文时可联动）
+- 其它专用 skill（若你已安装）：thesis 跟踪、单标快照、先例检索、公众号草稿发布等
 
 ## 关键纪律（再强调）
 

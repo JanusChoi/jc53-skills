@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """autonomous overnight batch driver for videomaker episodes.
 
-Usage (from the EP root, e.g. episodes/cat-05-catrush):
-  set -a; source ~/.hermes/profiles/cio/.env; set +a
-  python3 <skill_dir>/scripts/chained_drive.py \
-      --ep /Users/januswing/Downloads/video-workflow-extracted/episodes/<id> \
+Usage (from the episode root):
+  # load env vars required by your render backend (via your secret mechanism)
+  python3 <videomaker-batch-driver>/scripts/chained_drive.py \
+      --ep /path/to/episodes/<id> \
       [--segs seg1,seg2,seg3,seg4] \
       [--refs-seg1 /path/ref1.png,/path/ref2.png] \
       [--duration 6] \
       [--edit-script edit.sh] \
       [--render]           # add BGM (requires score.abc + render_with_music.py)
+      [--render-script /path/to/videomaker-sound/scripts/render_with_music.py] \
       [--log /tmp/proj_chain.log]
 
 Sequence (for each seg in order):
@@ -32,8 +33,15 @@ from pathlib import Path
 DEFAULT_SEGS = ["seg1", "seg2", "seg3", "seg4"]
 DEFAULT_DURATION = 6
 DEFAULT_EDIT_SCRIPT = "edit.sh"
-RENDER_WITH_MUSIC = (
-    "/Users/januswing/.hermes/profiles/cio/skills/video/videomaker-sound/scripts/render_with_music.py"
+# Prefer --render-script, else VIDEOMAKER_SOUND_RENDER, else sibling skill path.
+DEFAULT_RENDER_WITH_MUSIC = os.environ.get(
+    "VIDEOMAKER_SOUND_RENDER",
+    str(
+        Path(__file__).resolve().parents[2]
+        / "videomaker-sound"
+        / "scripts"
+        / "render_with_music.py"
+    ),
 )
 
 
@@ -94,7 +102,7 @@ def run_edit(ep: Path, edit_script: str, log_path: str) -> bool:
     return r.returncode == 0
 
 
-def run_render(ep: Path, log_path: str) -> bool:
+def run_render(ep: Path, render_script: str, log_path: str) -> bool:
     final = ep / "final" / f"{ep.name}.mp4"
     out = ep / "final" / f"{ep.name}-with-music.mp4"
     score = ep / "score.abc"
@@ -104,7 +112,10 @@ def run_render(ep: Path, log_path: str) -> bool:
     if not final.exists():
         log(f"  render skipped (no {final})", log_path)
         return False
-    cmd = ["python3", RENDER_WITH_MUSIC, str(final), str(out), "--abc", str(score)]
+    if not Path(render_script).exists():
+        log(f"  render skipped (script missing: {render_script})", log_path)
+        return False
+    cmd = ["python3", render_script, str(final), str(out), "--abc", str(score)]
     log(f"RENDER: {' '.join(cmd)}", log_path)
     r = subprocess.run(cmd, capture_output=True, text=True)
     if r.returncode == 0:
@@ -122,6 +133,11 @@ def main() -> int:
     ap.add_argument("--duration", type=int, default=DEFAULT_DURATION)
     ap.add_argument("--edit-script", default=DEFAULT_EDIT_SCRIPT)
     ap.add_argument("--render", action="store_true", help="also add BGM")
+    ap.add_argument(
+        "--render-script",
+        default=DEFAULT_RENDER_WITH_MUSIC,
+        help="path to videomaker-sound render_with_music.py",
+    )
     ap.add_argument("--log", default="/tmp/chained_drive.log")
     args = ap.parse_args()
 
@@ -170,7 +186,7 @@ def main() -> int:
 
     # render (optional)
     if args.render:
-        run_render(ep, args.log)
+        run_render(ep, args.render_script, args.log)
 
     log("=== chained driver done ===", args.log)
     return 0
