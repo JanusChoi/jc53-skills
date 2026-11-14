@@ -43,7 +43,9 @@
 | **Category** | trust / conversion / functional / ux / visual / a11y / perf / content |
 | **URL** | |
 | **Case** | C… |
-| **Evidence** | `screens/…` · `videos/…` |
+
+<!-- 必须嵌入相对路径图片，打开本 md 即可预览；不要只写路径文字 -->
+![issue evidence](screens/issue-….png)
 
 **Expected**
 
@@ -56,7 +58,7 @@
 **Repro Steps**
 
 1. …
-   `screens/…`
+   ![step](screens/….png)
 2. …
 3. **Observe:** …
 

@@ -1,18 +1,12 @@
-# human-qa — 试验目录指针（非权威源）
+# human-qa（全局）
 
-**全局权威副本**已迁到并登记：
+权威路径：`~/ace/skills/human-qa`  
+已登记：Cursor / Codex / Claude（mirasim）/ agents — 见 `../CATALOG.md`  
+版本：1.2.0（含行为不变量探针：基数 / 途中停止再武装 / 原地刷新）
 
-`~/ace/skills/human-qa`
+试验溯源：`~/ux-skill-trials/`（round1–3 + 早期 hybrid 草稿）。改 skill 请改**本目录**，再视需要把试验目录 README 指过来。
 
-软链：`~/.cursor/skills/human-qa`、`~/.codex/skills/human-qa`、`~/.mirasim/skills/human-qa`（Claude / agents）。
-
-本目录仅保留试验期草稿对照。改行为请改 ACE 权威源，然后：
-
-```bash
-~/ace/skills/register.sh --from ~/ace/skills/human-qa human-qa   # 仅刷新软链+目录也可：
-~/ace/skills/register.sh human-qa
-~/ace/skills/register.sh --list
+```text
+human-qa scoped https://tiwen.com 重点：…
+human-qa diff ~/code/tiwen-xphp since:"2 days ago" url:https://tiwen.com
 ```
-
-共识说明：`~/ace/skills/README.md`  
-目录：`~/ace/skills/CATALOG.md`

@@ -3,9 +3,10 @@ name: human-qa
 description: >-
   Persona-driven web QA with two entry modes: (1) user-scoped focus testing,
   (2) git-diff regression case extraction over a time range — then the same
-  human-simulation SOP and dogfood-style report. Use for human-qa, act-like-human
-  test, 真人验收, diff 回归, or regression from recent commits.
-version: 1.1.0
+  human-simulation SOP and dogfood-style report. Includes behavioral invariant
+  probes (cardinality, interrupt/re-arm, in-place regenerate). Use for human-qa,
+  act-like-human test, 真人验收, diff 回归, or regression from recent commits.
+version: 1.2.0
 ---
 
 # Human QA
@@ -81,8 +82,9 @@ cp "{SKILL_DIR}/templates/cases-template.md" "{OUTPUT_DIR}/01-cases.md"
 
 写 `{OUTPUT_DIR}/01-cases.md`（3～12 条）：
 
-- 每条：ID、标题、入口 URL/路径、前置（登录？）、步骤大纲、**期望**、优先级 P0/P1/P2
+- 每条：ID、标题、入口 URL/路径、前置（登录？）、步骤大纲、**期望（不变量）**、优先级 P0/P1/P2
 - 把 Focus 落成至少一条 P0；不要把范围外的探索塞进来
+- Scope 含对话/多模型/流式时：把 §4.1 相关探针落成 P0（`probe:INV-*`）
 - 区分 `logged-out` / `logged-in`；后者缺 Auth 时标 `blocked-pending-auth`
 
 然后进 **§2 Gate**。
@@ -132,9 +134,11 @@ git diff --stat "${BASE}..${TIP}" -- ':(exclude)*.lock' ':(exclude)*lock.yaml' '
 每条必须是**用户可观察行为**，不是「打开 Chat.tsx 看看」：
 
 - 坏：`验证 reconcileSlots`  
-- 好：`三模型会话中换掉中间模型后，旧回答仍以历史标签留在该泳道；刷新后仍在`
+- 好：`三模型会话中换掉中间模型后，旧回答仍以历史标签留在该泳道；刷新后仍在`  
+- 好：`换模型组合后只发一条「hi~」→ 每泳道至多一条新回答（INV-CARD）`  
+- 好：`生成中点停止 → 文案为已停止；再生成仍可停；刷新替换本条不追加（INV-INT/ARM/REPL）`
 
-标注：`source=commit:HASH` 或 `source=theme:泳道历史`；优先级；`logged-out|logged-in`。
+标注：`source=commit:HASH` / `theme:…` / `probe:INV-*`；优先级；`logged-out|logged-in`。
 
 写完 `00-brief.md`（Entry=`diff`、Repo、Window、URL、Auth）后进 **§2 Gate**。
 
@@ -167,14 +171,21 @@ Entry=`diff` 时 persona 可以是「回归验收的熟客用户」，仍要具�
 打开浏览器。用例是清单，**不是**无脑巡游脚本：
 
 - 用 persona 的顾虑决定**顺序**（例如怕扣费 → 先看定价相关 P0）。  
-- 每条 case 至少一个 `STEP_*` 组；可拆多步。
+- 每条 case 至少一个 `STEP_*` 组；可拆多步。  
+- 对话 / 流式 / 多模型类产品：P0 必须覆盖 **§4.1 行为不变量探针** 中与 Scope 相关的条目（至少 cardinality + interrupt/re-arm + in-place regenerate 各一条，若范围内有这些控件）。
+
+**浏览器可见与新鲜度（强制）：**
+
+1. 使用用户能看见的 Cursor 内置浏览器标签；导航时设 `position: "active"`（或用户要求的 side），禁止只在后台 `stable-browser-session` 里测而用户看不到。  
+2. 到达 Target URL 后先做一次**硬刷新**（绕过缓存，如 CDP `Page.reload` + `ignoreCache: true`，或等价 Ctrl/Cmd+Shift+R），再开始点选。  
+3. 若页面 `chrome-error` / 加载失败：Status=`incomplete`，写清阻塞，不要拿旧会话/缓存截图充数。
 
 每步强制顺序：
 
-1. 写 **预期**（操作前）  
+1. 写 **预期**（操作前）——含可数不变量时写清「数什么、期望几」  
 2. `STEP_START|<id>|<标题>`  
 3. 操作  
-4. 截图或 a11y 快照（失败交互尽量逐步截图）  
+4. 截图或 a11y 快照（失败交互尽量逐步截图；流式中途至少截一次）  
 5. `STEP_DONE` / `ASSERTION_FAILED` / `STEP_SKIPPED`（无证据禁止 DONE）
 
 `ASSERTION_FAILED` 字段：
@@ -185,6 +196,33 @@ Entry=`diff` 时 persona 可以是「回归验收的熟客用户」，仍要具�
 结束：`RUN_COMPLETED|passed|failed|incomplete|<一行摘要>`。
 
 阻塞：登录墙 / OTP / 付费 → 停或 SKIPPED，写进未覆盖。
+
+### 4.1 行为不变量探针（视频手势 → 可复用方法）
+
+真人录屏里有效的不是「多点几下」，而是：**先改配置 / 切入途中态 → 只给一次刺激 → 数副作用 → 再测控件是否能再次武装**。Actor 必须按探针写预期与计数，禁止用「看起来在动」当 pass。
+
+| 探针 ID | 方法论名称 | 手势（怎么测） | 断言（什么叫过） |
+|---|---|---|---|
+| **INV-CARD** | 刺激–响应基数不变量（cardinality） | 会话已有内容；改模型/泳道/组合（配置变更）；**只发送 1 条**短消息 | 每个激活泳道 ≤1 条新 assistant 气泡；全会话「正在连接/推理」指示与期望泳道数一致；禁止一条用户话触发同泳道双请求 |
+| **INV-CFG** | 配置变更后再刺激（config-then-stimulus） | 先完成选模型/完成弹层，确认 UI 稳定后再点发送 | 发送前不应已出现新的生成中状态；发送后才开始计时/连接 |
+| **INV-INT** | 途中打断（mid-flight interrupt） | 生成中（连接中/流式中）点 **停止** | 流停止；提示语语义 =「已停止/已取消」，**不是**忙线/重试/重新调用；输入可再次发送 |
+| **INV-ARM** | 控件再武装（affordance re-arm） | 停止一次 → 再发一条或再点刷新 → **再点停止** | 停止可再次点击并再次生效；禁止「停过一次后停止永久失效」 |
+| **INV-COPY** | 反馈文案一致性（feedback congruence） | 对照动作读 toast/状态行 | 停止 ≠「正在重新调用…」；失败 ≠「已重新生成」；文案与真实状态机一致 |
+| **INV-REPL** | 原地替换 vs 追加（in-place vs append） | 对**某一条**已有回答点刷新/重新生成；记录操作前该 turn 的气泡数 `N` | 操作后该 turn 仍为 1 条回答（或版本切换仍占同一槽）；`N` 不因刷新而 +1；toast 可说「已重新生成」但线程不得在下方再长出一条同 turn |
+
+**计数协议（强制记入 actor-log）：**
+
+```
+COUNT|before|<metric>=<n>   # 例：assistant_bubbles_in_lane_02=1
+COUNT|after|<metric>=<n>
+COUNT|delta|<metric>=<n>    # after-before；与期望比对
+```
+
+常用 metric：`user_turns`、`assistant_bubbles_total`、`assistant_bubbles_in_lane_<id>`、`generating_indicators`、`stop_controls_enabled`。
+
+**用例书写约定：** `01-cases.md` 的 Expected 必须写成不变量（「1 发 → 每泳道 1 答」「刷新后条数不变」），不要写「流程正常」。Source 可标 `probe:INV-CARD` 等。
+
+**范围提示：** 定价/营销页无流式控件时可跳过 INV-INT/ARM/REPL，在未覆盖写明；聊天/多模型/深度研究默认必做。
 
 ---
 
@@ -197,16 +235,18 @@ Entry=`diff` 时 persona 可以是「回归验收的熟客用户」，仍要具�
 
 1. 表头：Target、Entry、Scope/Window、Persona、Auth、Status、计数  
 2. **Summary** 严重度表（Critical/High/Medium/Low 或 RED/YELLOW；本 skill 用 RED/YELLOW/WHITE/GREEN + 待确认）  
-3. **Issues**：每条含严重度、分类、URL、期望/实际、复现步骤（可配截图路径）、`next-agent-prompt`  
+3. **Issues**：每条含严重度、分类、URL、期望/实际、复现步骤、`next-agent-prompt`  
 4. **待确认**（只观察到一次）  
 5. **未覆盖**（含未执行的 `01-cases` ID）  
 6. **Cases 结果矩阵**：case-id → pass/fail/skip/not-run  
+7. **截图必须可预览**：用相对路径 Markdown 图片嵌入（`![…](screens/….png)`），含 Evidence gallery；禁止只写路径文字  
 
 规则：
 
 - 复现两次（或 Actor 已写两次）才进 RED/YELLOW  
 - 零 `STEP_DONE`/`ASSERTION_FAILED` → Status=`incomplete`，禁止报 passed  
 - 务实过滤：定位/口味类降 WHITE/YELLOW  
+- 打开 `03-report.md` 应能直接看到关键截图（Preview / IDE 预览）  
 
 ---
 
@@ -243,6 +283,9 @@ RUN_COMPLETED|passed|failed|incomplete|<session-summary>
 
 - 页面打开了 ≠ 验过  
 - 差不多能用 ≠ `STEP_DONE`  
+- 「在转圈 / 有 toast」≠ 基数正确或停止语义正确  
+- 只测「点得动停止」≠ 测过再武装（必须停一次后再进生成态再停）  
+- 「刷新成功」toast ≠ 原地替换（必须数气泡）  
 - Actor 阶段假装不知道「在找 bug」  
 - Diff 入口禁止只交 digest 就当测试完成——必须跑 Actor/Judge，或明示 `incomplete` 仅交付用例待跑  
 - 没有 STEP 结果 ≠ passed  
