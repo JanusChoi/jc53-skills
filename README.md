@@ -36,6 +36,7 @@ ln -s "$(pwd)/jc53-skills/handoff" ~/.claude/skills/handoff
 | Skill | Description |
 |-------|-------------|
 | [`acceptance`](acceptance/) | Verify delivery outcomes on the real product and publish/render an acceptance report |
+| [`human-qa`](human-qa/) | Persona-driven web QA (v1.1): scoped focus testing or git-diff regression cases, then human-simulation SOP + dogfood report |
 | [`visual-qa`](visual-qa/) | Visual QA for screenshots vs reference (static / motion frames); Gemini and/or native vision |
 
 ### Investing & markets
