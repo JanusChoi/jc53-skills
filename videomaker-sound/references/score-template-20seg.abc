@@ -1,0 +1,19 @@
+X:1
+T:cat-XX bgm template 20-seg (5 acts × 4 bars)
+M:4/4
+Q:120
+L:1/8
+K:C
+% 1 幕 (seg01-04) 钩子 - 简单旋律
+|: C2 E2 | G2 E2 :| [| F2 D2 | E4 :|]
+% 2 幕 (seg05-08) 起 - 加厚度
+|: C2 G2 | E2 G2 :| [| F2 A2 | G4 :|]
+% 3 幕 (seg09-12) 升 - 爬升爆发
+|: C2 E2 G2 C2 | F2 D2 E2 G2 :| [| C2 E2 G2 C2 | F2 E2 D2 C2 :|]
+% 4 幕 (seg13-16) 升 - 持续高位
+|: G2 C2 | E2 G2 :| [| F2 D2 | E4 :|]
+% 5 幕 (seg17-20) 落 - 收尾
+|: E2 D2 | C4 :| [| G2 E2 | C4 :|]
+
+% Total: 20 bars × 0.5s/beat × 4 beat/bar = 40s BGM
+% 留 80s 静音填满 120s 视频（每段 6s 含约 2s 静音垫底）

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GeFei SEO Article Extraction",
+  "type": "object",
+  "required": ["schema_version", "article_id", "content_sha256", "source_assessment", "knowledge_units", "open_questions"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "article_id": {"type": "string", "minLength": 1},
+    "content_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "source_assessment": {
+      "type": "object",
+      "required": ["main_thesis", "article_type", "intended_audience", "source_limitations"],
+      "properties": {
+        "main_thesis": {"type": "string"},
+        "article_type": {"enum": ["methodology", "case_study", "tutorial", "news", "opinion", "interview", "community_digest", "other"]},
+        "intended_audience": {"type": "string"},
+        "source_limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "knowledge_units": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["unit_id", "dimensions", "kind", "claim", "applies_when", "action", "avoid", "steps", "metrics", "counterexamples", "time_scope", "attribution", "evidence", "confidence", "unknowns", "tool_requirements", "agent_use"],
+        "properties": {
+          "unit_id": {"type": "string", "minLength": 1},
+          "dimensions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"]}},
+          "kind": {"enum": ["observed_fact", "principle", "decision_rule", "procedure", "case", "anti_pattern", "tool_requirement", "hypothesis"]},
+          "claim": {"type": "string", "minLength": 1},
+          "applies_when": {"type": ["string", "null"]},
+          "action": {"type": ["string", "null"]},
+          "avoid": {"type": ["string", "null"]},
+          "steps": {"type": "array", "items": {"type": "string"}},
+          "metrics": {"type": "array", "items": {"type": "object", "required": ["name", "value", "unit", "period", "context"]}},
+          "counterexamples": {"type": "array", "items": {"type": "string"}},
+          "time_scope": {"enum": ["evergreen", "time_sensitive", "historical", "unknown"]},
+          "attribution": {"enum": ["author", "quoted", "reported", "editorial", "unknown"]},
+          "evidence": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["quote"], "properties": {"quote": {"type": "string", "minLength": 1}, "line_start": {"type": "integer", "minimum": 1}, "line_end": {"type": "integer", "minimum": 1}}}},
+          "confidence": {"enum": ["high", "medium", "low"]},
+          "unknowns": {"type": "array", "items": {"type": "string"}},
+          "tool_requirements": {"type": "array", "items": {"type": "string"}},
+          "agent_use": {"type": "array", "items": {"enum": ["kb", "skill", "tool_spec", "eval"]}}
+        }
+      }
+    },
+    "open_questions": {"type": "array", "items": {"type": "string"}}
+  }
+}

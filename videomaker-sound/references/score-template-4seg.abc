@@ -1,0 +1,17 @@
+X:1
+T:cat-XX bgm template 4-seg
+M:4/4
+Q:120
+L:1/8
+K:C
+% scene seg01 钩子 - 安静钢琴（4 小节 ≈ 4s，留 2s 静音给开画）
+|: C2 E2 | G2 E2 | F2 D2 | E4 :|
+% scene seg02 起 - 双音旋律（4 小节 ≈ 4s）
+|: C2 G2 | E2 G2 | F2 A2 | G4 :|
+% scene seg03 升 - 爬升旋律（中段爆发，4 小节 ≈ 4s）
+|: C2 E2 G2 C2 | F2 D2 E2 G2 | C2 E2 G2 C2 | F2 E2 D2 C2 :|
+% scene seg04 落 - 收尾（2 小节 ≈ 2s，留 2s 静音给反转）
+|: E2 D2 | C4 :|
+
+% Total: ~18s BGM + 静音 = 24s 视频
+% 使用时把 <seg01-04> 改成实际场景提示词里的关键词
