@@ -18,15 +18,15 @@ version: 1.2.0
 | **A · scoped** | 你指定范围与重点 | 把用户意图写成 brief + 用例清单 |
 | **B · diff** | 你给仓库 + 时间窗（或 since/until commit） | 读 git log/diff，提取回归用例，再进入同一 SOP |
 
-长板来源：adversarial（persona/过滤）+ dogfood（分级 report/复现两次）+ Expect（STEP 门禁、结构化失败、`next-agent-prompt`）+ 本仓库 round3 的「时段 diff → 诊断测什么」。
+长板来源：adversarial（persona/过滤）+ dogfood（分级 report/复现两次）+ Expect 风格 STEP 门禁与结构化失败（`next-agent-prompt`）+「时段 diff → 诊断测什么」。
 
-默认用 **Cursor 内置浏览器**。不要求 expect-cli。不要和 Expect CLI 混跑。
+使用 Agent **自带的内置浏览器**（导航 / 点击 / 截图；用户可见 + 硬刷新）。**以 Cursor 实测为主**，其它带内置浏览器的 Agent 同样适用。不要求 Expect CLI。
 
 ## 参数
 
 | 参数 | 默认 | 说明 |
 |---|---|---|
-| Target URL | 必填 | 如 `https://tiwen.com` |
+| Target URL | 必填 | 如 `https://example.com` |
 | Output dir | `./human-qa-output/` | 本轮产物根目录 |
 | Entry | 必填 | `scoped` 或 `diff` |
 | Repo | Entry=`diff` 时必填 | 本地 git 根目录 |
@@ -40,8 +40,8 @@ version: 1.2.0
 
 触发话术示例：
 
-- scoped：`human-qa scoped https://tiwen.com 重点：定价页划线价和注册赠送文案`
-- diff：`human-qa diff ~/code/tiwen-xphp since:"2 days ago" url:https://tiwen.com`
+- scoped：`human-qa scoped https://example.com 重点：定价页文案与注册赠送说明`
+- diff：`human-qa diff /path/to/your-repo since:"2 days ago" url:https://example.com`
 
 ## 总流程
 
@@ -176,9 +176,9 @@ Entry=`diff` 时 persona 可以是「回归验收的熟客用户」，仍要具�
 
 **浏览器可见与新鲜度（强制）：**
 
-1. 使用用户能看见的 Cursor 内置浏览器标签；导航时设 `position: "active"`（或用户要求的 side），禁止只在后台 `stable-browser-session` 里测而用户看不到。  
+1. 使用用户能看见的 **Agent 内置浏览器**标签（以 Cursor 实测为主；其它 harness 用其等价「可见 / 前台」浏览器能力）。禁止只在用户看不见的后台会话里测。  
 2. 到达 Target URL 后先做一次**硬刷新**（绕过缓存，如 CDP `Page.reload` + `ignoreCache: true`，或等价 Ctrl/Cmd+Shift+R），再开始点选。  
-3. 若页面 `chrome-error` / 加载失败：Status=`incomplete`，写清阻塞，不要拿旧会话/缓存截图充数。
+3. 若页面加载失败 / 错误页：Status=`incomplete`，写清阻塞，不要拿旧会话/缓存截图充数。  
 
 每步强制顺序：
 

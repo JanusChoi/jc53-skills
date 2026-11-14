@@ -2,7 +2,7 @@
 
 Persona 驱动的 Web 真人验收 skill（v1.2.0）。给 Agent 一套可重复的「像人一样点产品」SOP：先定范围或从 git diff 抽回归用例，再按角色逐步操作、逐步断言，最后产出 dogfood 风格报告（含可预览截图与 `next-agent-prompt`）。
 
-**想让自己的 Agent 也用上：** 只需安装 **`human-qa` 这一个文件夹**（不必装整个仓库），链到 Agent 的 skills 目录后，新开对话直接说 `human-qa scoped …` 或 `human-qa diff …`。一条命令见下节。
+**安装并使用：** 把 GitHub 仓库 [`JanusChoi/jc53-skills`](https://github.com/JanusChoi/jc53-skills) 里的 [`human-qa/`](https://github.com/JanusChoi/jc53-skills/tree/main/human-qa) 装进你所用 Agent 的 skills 目录（不必克隆整仓），例如 `npx --yes degit JanusChoi/jc53-skills/human-qa <你的-skills目录>/human-qa`，然后**新开对话**发送 `human-qa scoped <站点URL> …` 或 `human-qa diff <本地git根> since:"…" url:<站点URL>`。
 
 ---
 
@@ -15,10 +15,10 @@ Persona 驱动的 Web 真人验收 skill（v1.2.0）。给 Agent 一套可重复
 | 两种入口、同一后半程 | 你指定范围（scoped），或从时段 git 变更抽用例（diff），后面都走同一套 Actor → Judge |
 | 先写预期再操作 | 每步 `STEP_START` 前必须有可观察期望；无证据禁止 `STEP_DONE` |
 | 角色隔离 | Diff 分析师 / Actor / Judge 分阶段，避免「一边找 bug 一边定严重度」 |
-| 行为不变量 | 对话/多模型/流式产品默认探针：一条消息几条请求、停止能否再武装、刷新是替换还是追加 |
+| 行为不变量 | 对话/多模型/流式类产品默认探针：一条消息几条请求、停止能否再武装、刷新是替换还是追加 |
 | 生产安全默认开 | 未授权不注册、不付费、不删数据；登录/OTP 向人要 |
 
-默认用 **Cursor 内置浏览器**（可见标签 + 硬刷新）。不要求 Expect CLI，也不要和 Expect 混跑。
+**浏览器：** 使用 Agent **自带的内置浏览器**（需能导航、点击、截图；用户可见标签 + 硬刷新）。以 **Cursor 实测为主**，其它带内置浏览器的 Agent 同样适用。不依赖 Expect CLI。
 
 完整协议见同目录 [`SKILL.md`](./SKILL.md)；本 README 是对外说明。
 
@@ -34,9 +34,9 @@ Persona 驱动的 Web 真人验收 skill（v1.2.0）。给 Agent 一套可重复
 触发话术：
 
 ```text
-human-qa scoped https://tiwen.com 重点：定价页划线价和注册赠送文案
+human-qa scoped https://example.com 重点：定价页文案与注册赠送说明
 
-human-qa diff ~/code/tiwen-xphp since:"2 days ago" url:https://tiwen.com
+human-qa diff /path/to/your-repo since:"2 days ago" url:https://example.com
 ```
 
 ---
@@ -55,18 +55,16 @@ human-qa diff ~/code/tiwen-xphp since:"2 days ago" url:https://tiwen.com
 
 ### 行为不变量探针（对话类产品 P0）
 
-真人录屏里有效的手法，已落成可复用探针（详见 `SKILL.md` §4.1）：
-
 | ID | 名称 | 一句话断言 |
 |---|---|---|
-| INV-CARD | 刺激–响应基数 | 一次发送 → 每激活泳道至多 1 条新回答 |
-| INV-CFG | 配置后再刺激 | 换模型本身不开流；发送后才连接 |
+| INV-CARD | 刺激–响应基数 | 一次发送 → 每激活泳道/窗格至多 1 条新回答 |
+| INV-CFG | 配置后再刺激 | 改模型/布局本身不开流；发送后才连接 |
 | INV-INT | 途中打断 | 生成中点停止，流真停 |
 | INV-ARM | 控件再武装 | 停过一次后，下一轮仍可再停 |
-| INV-COPY | 反馈文案一致 | 停止 ≠「正在重新调用…」 |
+| INV-COPY | 反馈文案一致 | 停止文案 ≠「正在重新生成/重新调用…」 |
 | INV-REPL | 原地替换 | 刷新本条：气泡数不变，不在下方再长一条 |
 
-Actor 须写 `COUNT|before/after/delta`，禁止用「在转圈」当 pass。
+Actor 须写 `COUNT|before/after/delta`，禁止用「在转圈」当 pass。细节见 `SKILL.md` §4.1。
 
 ---
 
@@ -89,44 +87,39 @@ videos/             # 可选
 
 ---
 
-## 安装与启用（只装 human-qa）
+## 安装细节
 
-兼容会加载 Agent Skills 目录（含 `SKILL.md`）的环境：Cursor、Claude Code、Codex、Hermes 等。**默认只装本 skill**，不用克隆整仓。
+源码位置（任选其一）：
 
-### Cursor（推荐一条命令）
+- 目录：https://github.com/JanusChoi/jc53-skills/tree/main/human-qa  
+- 稀疏拉取：仓库 https://github.com/JanusChoi/jc53-skills ，子路径 `human-qa/`
+
+把该目录放到**你当前 Agent 配置的 skills 根**下，并命名为 `human-qa`（目录内须有 `SKILL.md`）。常见 skills 根示例（按你的工具改路径）：
+
+| 环境 | 常见 skills 目录 |
+|---|---|
+| Cursor | `~/.cursor/skills/` |
+| Claude Code | `~/.claude/skills/` |
+| 其它 | 以该 Agent 文档中的 skills / Agent Skills 路径为准 |
+
+推荐（只装本 skill，不装整仓）：
 
 ```bash
-mkdir -p ~/.cursor/skills \
-  && npx --yes degit JanusChoi/jc53-skills/human-qa ~/.cursor/skills/human-qa
+# 将 <AGENT_SKILLS_DIR> 换成上表中你的目录
+npx --yes degit JanusChoi/jc53-skills/human-qa <AGENT_SKILLS_DIR>/human-qa
 ```
 
-### Claude Code
-
-```bash
-mkdir -p ~/.claude/skills \
-  && npx --yes degit JanusChoi/jc53-skills/human-qa ~/.claude/skills/human-qa
-```
-
-没有 `npx` 时，用 sparse clone 只拉这一目录：
+没有 `npx` 时：
 
 ```bash
 git clone --depth 1 --filter=blob:none --sparse \
-  https://github.com/JanusChoi/jc53-skills.git ~/jc53-skills-human-qa
-cd ~/jc53-skills-human-qa && git sparse-checkout set human-qa
-mkdir -p ~/.cursor/skills
-ln -sfn ~/jc53-skills-human-qa/human-qa ~/.cursor/skills/human-qa
-# Claude 则把目标改成 ~/.claude/skills/human-qa
+  https://github.com/JanusChoi/jc53-skills.git /tmp/jc53-skills
+cd /tmp/jc53-skills && git sparse-checkout set human-qa
+mkdir -p <AGENT_SKILLS_DIR>
+ln -sfn /tmp/jc53-skills/human-qa <AGENT_SKILLS_DIR>/human-qa
 ```
 
-装好后 **新开一轮对话**，直接发：
-
-```text
-human-qa scoped https://example.com 重点：…
-```
-
-Agent 会读 `~/.cursor/skills/human-qa/SKILL.md`（或 Claude 对应路径）并按 SOP 跑。
-
-未出现 skill：检查目录里是否有 `SKILL.md`，并重启/新开会话。若已有整仓 [`jc53-skills`](https://github.com/JanusChoi/jc53-skills)，也可以只软链其中的 `human-qa/` 子目录，效果相同。
+装好后**新开一轮对话**再触发。未加载到 skill：确认 `<AGENT_SKILLS_DIR>/human-qa/SKILL.md` 存在，并重启/新开会话。
 
 ---
 
@@ -134,7 +127,7 @@ Agent 会读 `~/.cursor/skills/human-qa/SKILL.md`（或 Claude 对应路径）�
 
 | 参数 | 默认 | 说明 |
 |---|---|---|
-| Target URL | 必填 | 如 `https://example.com` |
+| Target URL | 必填 | 被测站点，如 `https://example.com` |
 | Output dir | `./human-qa-output/` | 本轮产物根 |
 | Entry | 必填 | `scoped` 或 `diff` |
 | Repo / Since / Until | diff 时 | 本地 git 与时间窗 |
