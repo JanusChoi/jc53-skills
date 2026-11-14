@@ -2,7 +2,7 @@
 
 Persona 驱动的 Web 真人验收 skill（v1.2.0）。给 Agent 一套可重复的「像人一样点产品」SOP：先定范围或从 git diff 抽回归用例，再按角色逐步操作、逐步断言，最后产出 dogfood 风格报告（含可预览截图与 `next-agent-prompt`）。
 
-**想让自己的 Agent 也用上：** 把本目录（或整个 [`jc53-skills`](https://github.com/JanusChoi/jc53-skills)）装进该 Agent 的 skills 路径，然后在对话里直接说 `human-qa scoped …` 或 `human-qa diff …`（安装见下方「安装与启用」）。
+**想让自己的 Agent 也用上：** 只需安装 **`human-qa` 这一个文件夹**（不必装整个仓库），链到 Agent 的 skills 目录后，新开对话直接说 `human-qa scoped …` 或 `human-qa diff …`。一条命令见下节。
 
 ---
 
@@ -89,29 +89,44 @@ videos/             # 可选
 
 ---
 
-## 安装与启用
+## 安装与启用（只装 human-qa）
 
-兼容会加载 Agent Skills 目录（含 `SKILL.md`）的环境：Cursor、Claude Code、Codex、Hermes 等。
+兼容会加载 Agent Skills 目录（含 `SKILL.md`）的环境：Cursor、Claude Code、Codex、Hermes 等。**默认只装本 skill**，不用克隆整仓。
 
-```bash
-git clone https://github.com/JanusChoi/jc53-skills.git
-```
-
-任选其一：
+### Cursor（推荐一条命令）
 
 ```bash
-# 只装本 skill（示例：Cursor 用户技能目录）
-ln -s "$(pwd)/jc53-skills/human-qa" ~/.cursor/skills/human-qa
-
-# Claude Code / 同类
-ln -s "$(pwd)/jc53-skills/human-qa" ~/.claude/skills/human-qa
-
-# 或把整个 jc53-skills 加进 Agent 的额外 skills 搜索路径（视你的 harness 配置）
+mkdir -p ~/.cursor/skills \
+  && npx --yes degit JanusChoi/jc53-skills/human-qa ~/.cursor/skills/human-qa
 ```
 
-装好后新开一轮对话，直接发上面的 `human-qa scoped …` / `human-qa diff …` 即可；Agent 应读取本目录的 `SKILL.md` 并按 SOP 执行。
+### Claude Code
 
-若 skill 未自动出现：确认软链目标存在、文件名是 `SKILL.md`，并重启/新开 Agent 会话。
+```bash
+mkdir -p ~/.claude/skills \
+  && npx --yes degit JanusChoi/jc53-skills/human-qa ~/.claude/skills/human-qa
+```
+
+没有 `npx` 时，用 sparse clone 只拉这一目录：
+
+```bash
+git clone --depth 1 --filter=blob:none --sparse \
+  https://github.com/JanusChoi/jc53-skills.git ~/jc53-skills-human-qa
+cd ~/jc53-skills-human-qa && git sparse-checkout set human-qa
+mkdir -p ~/.cursor/skills
+ln -sfn ~/jc53-skills-human-qa/human-qa ~/.cursor/skills/human-qa
+# Claude 则把目标改成 ~/.claude/skills/human-qa
+```
+
+装好后 **新开一轮对话**，直接发：
+
+```text
+human-qa scoped https://example.com 重点：…
+```
+
+Agent 会读 `~/.cursor/skills/human-qa/SKILL.md`（或 Claude 对应路径）并按 SOP 跑。
+
+未出现 skill：检查目录里是否有 `SKILL.md`，并重启/新开会话。若已有整仓 [`jc53-skills`](https://github.com/JanusChoi/jc53-skills)，也可以只软链其中的 `human-qa/` 子目录，效果相同。
 
 ---
 
